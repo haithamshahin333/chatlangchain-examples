@@ -1,0 +1,31 @@
+evals/data/qa.jsonl
+  s_6feb8e169bebe4::t_e22ab604abdfcf 1-12
+evals/data/relevance.jsonl
+  s_6feb8e169bebe4::t_40cc60a3ca4ab2 1-40
+langgraph.deepagent.json
+  s_6feb8e169bebe4::t_342899e6f8f480 1-9
+langgraph.workflow.json
+  s_6feb8e169bebe4::t_30a06d3a713050 1-9
+pyproject.toml
+  s_6feb8e169bebe4::t_5a2575a21f1a22 1-27
+requirements.txt
+  s_6feb8e169bebe4::t_78d6f0b497882e 1-517
+uv.lock
+  s_6feb8e169bebe4::t_cf120e8ebdb9c2 1-2397
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "021c5331aac94817b94a6d06fcd72f5b967d69f7",
+  "prompts": {},
+  "sessions": {
+    "s_6feb8e169bebe4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8c1b0138-6a91-41b8-ba41-e95e82d94a0e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "haithamshahin333 <42976403+haithamshahin333@users.noreply.github.com>"
+    }
+  }
+}
