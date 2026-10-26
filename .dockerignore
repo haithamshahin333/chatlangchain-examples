@@ -1,0 +1,14 @@
+# `langgraph deploy` packs this folder for the remote build and only skips .venv/.git
+# by itself. Keep secrets out of the image: they reach the deployment as secrets instead.
+.env
+.env.*
+!.env.example
+.langgraph_api/
+__pycache__/
+# Editor and agent tooling
+.claude/
+.cursor/
+.github/
+.vscode/
+.idea/
+.DS_Store

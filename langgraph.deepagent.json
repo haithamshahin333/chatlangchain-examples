@@ -1,0 +1,9 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "python_version": "3.12",
+  "dependencies": ["."],
+  "graphs": {
+    "chat_langchain_deepagent": "./src/chat_langchain/deep_agent.py:make_graph"
+  },
+  "env": ".env"
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "python_version": "3.12",
+  "dependencies": ["."],
+  "graphs": {
+    "chat_langchain_workflow": "./src/chat_langchain/workflow.py:graph"
+  },
+  "env": ".env"
+}
