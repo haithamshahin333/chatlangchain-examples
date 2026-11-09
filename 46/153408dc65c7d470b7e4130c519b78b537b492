@@ -1,0 +1,100 @@
+agents/workflow/chat_langchain_workflow/graph.py
+  s_6feb8e169bebe4::t_25aee1f9729f1f 1-87
+agents/deepagent/chat_langchain_deepagent/settings.py
+  s_6feb8e169bebe4::t_4e9d4ed415f724 1-26
+scripts/provision.py
+  s_6feb8e169bebe4::t_6ae05bc389abad 31-32,37,43-44,76-81,193,195-196
+agents/deepagent/chat_langchain_deepagent/docs_tools.py
+  s_6feb8e169bebe4::t_b3bf1cdbbbafb4 1-34
+agents/deepagent/pyproject.toml
+  s_6feb8e169bebe4::t_540f541490fd4e 1-20
+agents/workflow/.dockerignore
+  s_6feb8e169bebe4::t_540f541490fd4e 1-8
+agents/deepagent/README.md
+  s_6feb8e169bebe4::t_0fe94468b82fa6 1-23
+agents/workflow/chat_langchain_workflow/docs_tools.py
+  s_6feb8e169bebe4::t_2b6e42cc1fdee4 1-44
+agents/workflow/README.md
+  s_6feb8e169bebe4::t_4c18d80d4033b3 1-23
+agents/deepagent/.dockerignore
+  s_6feb8e169bebe4::t_540f541490fd4e 1-8
+agents/deepagent/chat_langchain_deepagent/skills/validate-snippet/check_snippet.py
+  s_6feb8e169bebe4::t_eff1aa30905aa8 1-77
+.env.example
+  s_6feb8e169bebe4::t_a521da0cdd1400 1-2,15
+agents/workflow/chat_langchain_workflow/settings.py
+  s_6feb8e169bebe4::t_f13448a1b43b3e 1-19
+agents/deepagent/chat_langchain_deepagent/sandbox.py
+  s_6feb8e169bebe4::t_adebdaf4282662 38,49,53-57,60-61
+  s_6feb8e169bebe4::t_ed0dd5b3b218f0 1-37,39-48,50-52,58-59,62-68
+agents/workflow/chat_langchain_workflow/classifier.py
+  s_6feb8e169bebe4::t_56c6e1f52eb1c7 1-92
+evals/deep_agent_eval.py
+  s_6feb8e169bebe4::t_6ae05bc389abad 18-19,29
+agents/workflow/langgraph.json
+  s_6feb8e169bebe4::t_540f541490fd4e 1-9
+agents/workflow/pyproject.toml
+  s_6feb8e169bebe4::t_540f541490fd4e 1-19
+evals/skill_eval.py
+  s_6feb8e169bebe4::t_ce996222d3929b 94
+  s_6feb8e169bebe4::t_abea38427e9b4a 1-93,95-230
+agents/deepagent/chat_langchain_deepagent/skills/validate-snippet/SKILL.md
+  s_6feb8e169bebe4::t_eff1aa30905aa8 1-31
+agents/deepagent/langgraph.json
+  s_6feb8e169bebe4::t_540f541490fd4e 1-9
+agents/deepagent/chat_langchain_deepagent/agent.py
+  s_6feb8e169bebe4::t_2fb9ec999331be 11,26-52
+  s_6feb8e169bebe4::t_5a2a12563ea773 80-98
+  s_6feb8e169bebe4::t_e7dfe9d6311aa4 53
+  s_6feb8e169bebe4::t_d4563cd3042c1b 3,19-22
+evals/data/skill.jsonl
+  s_6feb8e169bebe4::t_7b2d725991fab2 1
+  s_6feb8e169bebe4::t_2eb7781637955b 2-8
+scripts/setup_online_evals.py
+  s_6feb8e169bebe4::t_6ae05bc389abad 33
+README.md
+  s_6feb8e169bebe4::t_a27bfbceec5057 55,60,176,197-208
+  s_6feb8e169bebe4::t_2d760ebd819493 333-336
+  s_6feb8e169bebe4::t_15e17bd9f8bea3 20-24,33-51,56,69-70,74-77
+  s_6feb8e169bebe4::t_c39037bc163121 78
+agents/deepagent/chat_langchain_deepagent/classifier.py
+  s_6feb8e169bebe4::t_ae08768aae486a 1-96
+agents/deepagent/chat_langchain_deepagent/guardrail.py
+  s_6feb8e169bebe4::t_dd805f04a9e84a 1-36
+scripts/smoke.py
+  s_6feb8e169bebe4::t_6ae05bc389abad 15-19,23,55,60,77
+pyproject.toml
+  s_6feb8e169bebe4::t_052ba0edf7fe75 1-3,5,10-11,21-22,24-26
+evals/settings.py
+  s_6feb8e169bebe4::t_b005416f0bf8f3 1-19
+requirements.txt
+  s_6feb8e169bebe4::t_22a35a0fe472e4 3-6,74,184-185,192-193,208-209,218-219,245-246
+scripts/cleanup_sandboxes.py
+  s_6feb8e169bebe4::t_6ae05bc389abad 9
+evals/classifier_eval.py
+  s_6feb8e169bebe4::t_002d79005977ec 86,92,104-105
+  s_6feb8e169bebe4::t_9b888f01cb08e3 5-6,15-18,25-38
+Makefile
+  s_6feb8e169bebe4::t_67ce7395b5c982 14-15,19-20,24,38-39,41,44,77,80,83,86
+  s_6feb8e169bebe4::t_c41a622ee91676 26,57-59
+  s_6feb8e169bebe4::t_a521da0cdd1400 13
+  s_6feb8e169bebe4::t_88b7ea2fa86e6b 60
+uv.lock
+  s_6feb8e169bebe4::t_adb46a08034d88 5-11,255,257,267-285,295-296,306-326
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "46153408dc65c7d470b7e4130c519b78b537b492",
+  "prompts": {},
+  "sessions": {
+    "s_6feb8e169bebe4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8c1b0138-6a91-41b8-ba41-e95e82d94a0e",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "haithamshahin333 <42976403+haithamshahin333@users.noreply.github.com>"
+    }
+  }
+}
