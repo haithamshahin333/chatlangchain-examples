@@ -17,8 +17,11 @@ The agents are kept small on purpose. The point is to exercise LangSmith feature
 | Offline eval | **Node-level**: grades only `classify` against labeled questions | **Model comparison**: Sonnet vs Haiku, then a pairwise judge |
 | LangSmith agent | `chat-langchain-workflow` | `chat-langchain-deepagent` |
 
-Both agents share one classifier (`src/chat_langchain/classifier.py`): a node in one agent,
-middleware in the other. So the node-level eval grades the deep agent's front door too.
+Each agent is a standalone project under `agents/` and shares no code with the other. Both
+use the same relevance classifier, so each folder carries its own copy of it. It is a node in
+one agent and middleware in the other. The node-level eval grades the workflow's copy. It
+counts for the deep agent's front door too only while the two copies have the same prompt,
+schema and refusal text. `evals/classifier_eval.py` checks this before it tags the deep agent.
 
 Every model call goes through the **LangSmith LLM Gateway** using the org's saved model
 configurations: `langsmith:custom/claude-sonnet-5-5` and `langsmith:custom/claude-haiku-5-5`.
@@ -27,34 +30,51 @@ No provider key exists anywhere in this app.
 ## Layout
 
 ```
-src/chat_langchain/              the two agents (this is what gets deployed)
-  settings.py      every tunable: models, eval judges, MCP URLs, sandbox naming and TTLs
-  docs_tools.py    MCP → LangChain tools (MCPAdapter), drops submit_feedback
-  classifier.py    shared Relevance schema + prompt + classify()/aclassify()
-  workflow.py      LangGraph StateGraph (graph id: chat_langchain_workflow)
-  guardrail.py     RelevanceGuardrail(AgentMiddleware)
-  sandbox.py       get-or-create the thread's sandbox; seeds /work and the skill
-  deep_agent.py    async graph factory make_graph(config) (graph id: chat_langchain_deepagent)
-  skills/validate-snippet/   SKILL.md + check_snippet.py (runs inside the sandbox)
+agents/workflow/                 the LangGraph workflow: a standalone LangGraph project
+  chat_langchain_workflow/
+    graph.py         StateGraph classify → refuse | retrieve → respond (graph id: chat_langchain_workflow)
+    classifier.py    Relevance schema + prompt + aclassify() + refusal text
+    docs_tools.py    MCP → LangChain tools (MCPAdapter), drops submit_feedback
+    settings.py      models and MCP URLs
+  langgraph.json     deployment config; `langgraph deploy` uploads only this folder
+  pyproject.toml     this agent's dependencies (no deepagents)
+agents/deepagent/                the Deep Agent: a standalone LangGraph project
+  chat_langchain_deepagent/
+    agent.py         async graph factory make_graph(config) (graph id: chat_langchain_deepagent)
+    guardrail.py     RelevanceGuardrail(AgentMiddleware)
+    classifier.py    a copy of the workflow's classifier, plus a sync classify()
+    sandbox.py       get-or-create the thread's sandbox; seeds /work and the skill
+    docs_tools.py    MCP → LangChain tools (MCPAdapter), drops submit_feedback
+    settings.py      models, MCP URLs, sandbox naming and TTLs
+    skills/validate-snippet/   SKILL.md + check_snippet.py (runs inside the sandbox)
+  langgraph.json     deployment config; `langgraph deploy` uploads only this folder
+  pyproject.toml     this agent's dependencies
 evals/
   data/relevance.jsonl      40 labeled questions (26 relevant, 14 off-topic incl. injections)
   data/qa.jsonl             12 questions with reference answers, expected tools, refusals
+  data/skill.jsonl          8 questions for the skill eval: write, fix, and no-Python near-misses
+  settings.py               the offline and online judge models
   common.py                 datasets from JSONL; tags datasets and experiments to agents
   classifier_eval.py        node-only eval + precision/recall/F1/false-refusal summary metrics
   deep_agent_eval.py        `run --model …` and `pairwise A B`
+  skill_eval.py             validate-snippet with vs without (`make eval-skill`)
   online/cites_sources.py   code evaluator, uploaded as an online rule
 scripts/
   provision.py              everything below in one command (`make provision`)
   smoke.py                  drive a local or deployed agent end to end
   setup_online_evals.py     online evaluators + review queue on Production
   cleanup_sandboxes.py      delete leftover sandboxes
-langgraph.workflow.json / langgraph.deepagent.json   one config per agent (deployment)
 Makefile                    every command in this README
 .env.example                the secrets .env needs (.env itself is never committed)
-.dockerignore               keeps .env and local state out of the deploy build
-pyproject.toml + uv.lock    dependencies; requirements.txt is the same set for pip
+pyproject.toml + uv.lock    uv workspace over both agents + the eval/deploy tooling;
+                            requirements.txt is the same set for pip
 .python-version             3.12, the same Python the deployments build with
 ```
+
+Each agent folder has a short README of its own. Every command runs from the repo root, in
+one venv that has both agents installed. Both `langgraph.json` files read the root `.env`
+(`"env": "../../.env"`). That file sits outside the agent folders, so it never goes into a
+deploy upload. It only reaches the deployments as secrets.
 
 ## Prerequisites
 
@@ -153,6 +173,7 @@ make eval-classifier                                             # Haiku (defaul
 make eval-deepagent  MODEL=langsmith:custom/claude-sonnet-5-5
 make eval-deepagent  MODEL=langsmith:custom/claude-haiku-5-5
 make pairwise A=<sonnet experiment> B=<haiku experiment>
+make eval-skill                                                  # validate-snippet: off vs skill
 ```
 
 - **Node-level eval.** The target calls the `classify` node function with a state dict. The
@@ -173,6 +194,18 @@ make pairwise A=<sonnet experiment> B=<haiku experiment>
   - Rows a reviewer adds from the review queue (**Add to Dataset**) hold the run's
     `messages` rather than reference fields. `reference()` uses their final message,
     corrected by the reviewer, as the reference answer.
+- **Skill eval.** Does the `validate-snippet` skill improve the code in answers? Two
+  experiments on `chat-langchain-skill` (8 rows × 3 repetitions), same model and judge:
+  - `off`: no skill and no system-prompt line about it. `skill`: the skill is loaded, also
+    without the line, so only its description can trigger it. The arms come from
+    `configurable.skill_variant`, which only the eval sets; deployments keep both.
+  - `imports_valid`: the Python in the final answer passes the skill's own `check_snippet.py`,
+    run in a separate grader sandbox whether or not the agent checked it.
+  - `skill_used` (skill arm): read `SKILL.md` on the rows that need Python, and not otherwise.
+  - `correctness`: the same judge as the model comparison.
+  - Compare them on the dataset: **Experiments → Group by `variant`**, or select both →
+    **Compare**. `skill_version` in the metadata is a hash of the skill folder, so runs of
+    different skill versions stay apart.
 - **How evals map to agents in an agent-based workspace.**
   - Traces, evaluators, alerts and prebuilt dashboards belong to one *environment* of an agent.
   - Datasets attach to one or more *agents* and to no environment.
@@ -297,9 +330,10 @@ it per environment. Calling a deployment needs a LangSmith API key for the works
   `ainvoke` work, so non-streaming smoke tests and evals miss it. `scripts/smoke.py` now
   streams. `function_calling` forces a tool call, which Haiku 5.5 accepts. Claude
   Sonnet 5.5 and Opus 5.5 reject it, so keep `CHATLC_FAST_MODEL` on Haiku.
-- **`langgraph deploy` packs `.env` into the remote build** unless `.dockerignore` excludes
-  it. The CLI only skips `.venv`, `.git` and similar by itself. This repo ships a
-  `.dockerignore`.
+- **`langgraph deploy` packs the config's folder into the remote build, `.env` included,**
+  unless `.dockerignore` excludes it. The CLI only skips `.venv`, `.git` and similar by
+  itself. Here the `.env` is at the repo root, outside both agent folders, and each agent
+  folder also ships a `.dockerignore`.
 - **A shell `OPENAI_BASE_URL` beats `LANGSMITH_GATEWAY=true`** for `openai:` models. The
   `langsmith:` provider ignores it, and the Makefile strips it anyway.
 - **The graph factory runs before the guardrail.** A new thread gets its sandbox on its

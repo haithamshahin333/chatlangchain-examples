@@ -1,0 +1,8 @@
+# `langgraph deploy` packs only this folder for the remote build. The secrets live in the
+# repo-root .env, outside it, and reach the deployment as secrets. This keeps any stray
+# env file and local state out of the image too.
+.env
+.env.*
+.langgraph_api/
+__pycache__/
+.DS_Store

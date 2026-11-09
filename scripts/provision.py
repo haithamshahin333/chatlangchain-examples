@@ -28,18 +28,20 @@ import time
 from collections import deque
 from pathlib import Path
 
+from chat_langchain_deepagent import settings as deepagent_settings
+from chat_langchain_workflow import settings as workflow_settings
 from langsmith import Client
 
-from chat_langchain.settings import FAST_MODEL, JUDGE_MODEL, MAIN_MODEL, ONLINE_JUDGE_CONFIG
 from evals import classifier_eval, deep_agent_eval
 from evals.common import DEEPAGENT_AGENT, WORKFLOW_AGENT
+from evals.settings import JUDGE_MODEL, ONLINE_JUDGE_CONFIG
 from scripts import setup_online_evals, smoke
 from scripts.cleanup_sandboxes import cleanup
 
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS = {  # agent id → (langgraph config, smoke-test name)
-    WORKFLOW_AGENT: ("langgraph.workflow.json", "workflow"),
-    DEEPAGENT_AGENT: ("langgraph.deepagent.json", "deepagent"),
+    WORKFLOW_AGENT: ("agents/workflow/langgraph.json", "workflow"),
+    DEEPAGENT_AGENT: ("agents/deepagent/langgraph.json", "deepagent"),
 }
 STAGES = ("deploy", "online", "offline")
 REQUIRED_ENV = ("LANGSMITH_API_KEY", "LANGSMITH_GATEWAY_API_KEY", "LANGSMITH_SANDBOX_API_KEY")
@@ -71,7 +73,12 @@ def preflight(skip: set[str]) -> None:
         raise ProvisionError("\n  - ".join(["preflight failed:", *problems]))
 
     client = Client()
-    models = {MAIN_MODEL, FAST_MODEL} | ({JUDGE_MODEL} if "offline" not in skip else set())
+    models = {
+        workflow_settings.MAIN_MODEL,
+        workflow_settings.FAST_MODEL,
+        deepagent_settings.MAIN_MODEL,
+        deepagent_settings.FAST_MODEL,
+    } | ({JUDGE_MODEL} if "offline" not in skip else set())
     wanted = {m.removeprefix(CUSTOM) for m in models if m.startswith(CUSTOM)}
     if "online" not in skip and not creates_judge:  # otherwise the online stage creates it
         wanted.add(ONLINE_JUDGE_CONFIG)
@@ -183,10 +190,10 @@ async def deploy_and_smoke(environment: str) -> dict[str, str]:
 async def offline() -> list[str]:
     # Only the guardrail's own model: the classifier forces a tool call, which the main
     # model (Claude Sonnet 5.5) rejects.
-    experiments = [await classifier_eval.main(FAST_MODEL)]
+    experiments = [await classifier_eval.main(workflow_settings.FAST_MODEL)]
     try:
-        main_run = await deep_agent_eval.run(MAIN_MODEL)
-        fast_run = await deep_agent_eval.run(FAST_MODEL)
+        main_run = await deep_agent_eval.run(deepagent_settings.MAIN_MODEL)
+        fast_run = await deep_agent_eval.run(deepagent_settings.FAST_MODEL)
     finally:
         cleanup("chatlc-eval-")  # every eval example ran on its own thread sandbox
     await asyncio.to_thread(deep_agent_eval.pairwise, main_run, fast_run)

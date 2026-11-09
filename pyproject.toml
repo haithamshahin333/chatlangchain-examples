@@ -1,15 +1,14 @@
+# The tour around the two agents: evals, smoke tests, provisioning. Not deployed itself.
+# Each agent under agents/ is its own package with its own dependencies; this workspace
+# installs both into one venv so the evals and scripts can import them.
 [project]
-name = "chat-langchain"
+name = "chat-langchain-tour"
 version = "0.1.0"
 description = "chat-langchain twice: a LangGraph workflow and a Deep Agent, built to tour LangSmith"
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "langchain[mcp]>=1.4.6,<2.0",
-    "langchain-core>=1.5.1,<2.0",
-    "langchain-openai>=1.4.1",
-    "langgraph>=1.0,<2.0",
-    "deepagents>=0.7.28",
-    "langsmith>=0.14.9",
+    "chat-langchain-workflow",
+    "chat-langchain-deepagent",
 ]
 
 [dependency-groups]
@@ -19,9 +18,9 @@ dev = [
     "openevals",
 ]
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.uv.workspace]
+members = ["agents/workflow", "agents/deepagent"]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/chat_langchain"]
+[tool.uv.sources]
+chat-langchain-workflow = { workspace = true }
+chat-langchain-deepagent = { workspace = true }

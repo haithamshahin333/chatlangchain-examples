@@ -15,6 +15,8 @@ import uuid
 from functools import cache
 from typing import Literal
 
+from chat_langchain_deepagent.agent import make_graph
+from chat_langchain_deepagent.classifier import REFUSAL
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import convert_to_messages
 from langsmith import Client, aevaluate
@@ -23,10 +25,8 @@ from openevals.llm import create_llm_as_judge
 from openevals.prompts import CORRECTNESS_PROMPT
 from pydantic import BaseModel
 
-from chat_langchain.classifier import REFUSAL
-from chat_langchain.deep_agent import make_graph
-from chat_langchain.settings import JUDGE_MODEL
 from evals.common import DEEPAGENT_AGENT, ensure_dataset, short_name, tag_experiment
+from evals.settings import JUDGE_MODEL
 
 DATASET = "chat-langchain-qa"
 

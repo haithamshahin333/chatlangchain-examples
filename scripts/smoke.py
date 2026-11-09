@@ -12,14 +12,15 @@ import asyncio
 import time
 import uuid
 
+from chat_langchain_deepagent.classifier import REFUSAL as DEEPAGENT_REFUSAL
+from chat_langchain_deepagent.sandbox import client as sandbox_client
+from chat_langchain_deepagent.sandbox import sandbox_name
+from chat_langchain_deepagent.settings import SANDBOX_WORKDIR
+from chat_langchain_workflow.classifier import REFUSAL as WORKFLOW_REFUSAL
 from langgraph_sdk import get_client
 
-from chat_langchain.classifier import REFUSAL
-from chat_langchain.sandbox import client as sandbox_client
-from chat_langchain.sandbox import sandbox_name
-from chat_langchain.settings import SANDBOX_WORKDIR
-
 GRAPHS = {"workflow": "chat_langchain_workflow", "deepagent": "chat_langchain_deepagent"}
+REFUSALS = {"workflow": WORKFLOW_REFUSAL, "deepagent": DEEPAGENT_REFUSAL}
 
 
 async def ask(client, assistant: str, thread_id: str, text: str) -> str:
@@ -51,12 +52,12 @@ def check(label: str, ok: bool) -> bool:
 
 async def main(agent: str, url: str) -> bool:
     client = get_client(url=url)
-    assistant = GRAPHS[agent]
+    assistant, refusal = GRAPHS[agent], REFUSALS[agent]
     results = []
 
     thread = (await client.threads.create(thread_id=str(uuid.uuid4())))["thread_id"]
     answer = await ask(client, assistant, thread, "How do I add memory to a LangGraph agent?")
-    results.append(check("on-topic question is answered", REFUSAL not in answer))
+    results.append(check("on-topic question is answered", refusal not in answer))
 
     if agent == "deepagent":
         await ask(
@@ -73,7 +74,7 @@ async def main(agent: str, url: str) -> bool:
 
     off_topic = (await client.threads.create())["thread_id"]
     answer = await ask(client, assistant, off_topic, "What's a good recipe for banana bread?")
-    results.append(check("off-topic question is refused", REFUSAL in answer))
+    results.append(check("off-topic question is refused", refusal in answer))
 
     print(f"\n{sum(results)}/{len(results)} checks passed")
     return all(results)

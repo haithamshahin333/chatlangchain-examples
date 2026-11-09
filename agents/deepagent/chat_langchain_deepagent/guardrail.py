@@ -1,4 +1,4 @@
-"""The same relevance classifier, placed as deep-agent middleware.
+"""The relevance classifier, placed as deep-agent middleware.
 
 `before_agent` runs once per user turn, before the agent loop starts. On an
 off-topic question it writes a refusal and jumps to the end, so the model,
@@ -12,8 +12,8 @@ from langchain.agents.middleware import AgentMiddleware, AgentState, hook_config
 from langchain_core.messages import AIMessage
 from langgraph.runtime import Runtime
 
-from chat_langchain.classifier import REFUSAL, Relevance, aclassify, classify
-from chat_langchain.settings import FAST_MODEL
+from chat_langchain_deepagent.classifier import REFUSAL, Relevance, aclassify, classify
+from chat_langchain_deepagent.settings import FAST_MODEL
 
 
 class RelevanceGuardrail(AgentMiddleware):

@@ -1,4 +1,4 @@
-"""Search tools for both agents, straight from the public LangChain MCP servers.
+"""Search tools for the `retrieve` node, straight from the public LangChain MCP servers.
 
 docs.langchain.com/mcp       -> search_docs_by_lang_chain, query_docs_filesystem_docs_by_lang_chain
 reference.langchain.com/mcp  -> search_api, get_symbol
@@ -14,7 +14,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore", LangChainBetaWarning)
     from langchain.mcp import MCPAdapter
 
-from chat_langchain.settings import DOCS_MCP_URL, REFERENCE_MCP_URL
+from chat_langchain_workflow.settings import DOCS_MCP_URL, REFERENCE_MCP_URL
 
 # Not something a Q&A bot should call on a user's behalf.
 _EXCLUDED = {"submit_feedback"}

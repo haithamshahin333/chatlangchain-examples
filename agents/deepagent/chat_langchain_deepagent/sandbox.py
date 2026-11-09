@@ -15,7 +15,7 @@ from pathlib import Path
 from deepagents.backends.langsmith import LangSmithSandbox
 from langsmith.sandbox import ResourceNotFoundError, Sandbox, SandboxClient
 
-from chat_langchain.settings import (
+from chat_langchain_deepagent.settings import (
     SANDBOX_DELETE_AFTER_STOP_SECONDS,
     SANDBOX_IDLE_TTL_SECONDS,
     SANDBOX_PREFIX,
@@ -35,7 +35,7 @@ def sandbox_name(thread_id: str) -> str:
     return f"{SANDBOX_PREFIX}{thread_id}"
 
 
-def get_or_create(thread_id: str) -> Sandbox:
+def get_or_create(thread_id: str, with_skills: bool = True) -> Sandbox:
     name = sandbox_name(thread_id)
     try:
         return client().get_sandbox(name)
@@ -46,14 +46,19 @@ def get_or_create(thread_id: str) -> Sandbox:
             delete_after_stop_seconds=SANDBOX_DELETE_AFTER_STOP_SECONDS,
             timeout=120,
         )
-        _seed(LangSmithSandbox(sandbox=sandbox))
+        _seed(LangSmithSandbox(sandbox=sandbox), with_skills)
         return sandbox
 
 
-def _seed(backend: LangSmithSandbox) -> None:
-    """Create the work dirs and copy the bundled skills in, so skill scripts run here."""
+def _seed(backend: LangSmithSandbox, with_skills: bool) -> None:
+    """Create the work dirs and copy the bundled skills in, so skill scripts run here.
+
+    The skill eval's no-skill arm leaves them out, so the agent can't find them with `ls`.
+    """
     w = SANDBOX_WORKDIR
     backend.execute(f"mkdir -p {w}/repos {w}/snippets {w}/skills")
+    if not with_skills:
+        return
     backend.upload_files(
         [
             (f"{w}/skills/{path.relative_to(SKILLS_DIR)}", path.read_bytes())

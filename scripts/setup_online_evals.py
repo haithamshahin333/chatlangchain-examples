@@ -28,9 +28,9 @@ from datetime import datetime, timedelta, timezone
 
 from langsmith import Client
 
-from chat_langchain.settings import ONLINE_JUDGE_CONFIG, ONLINE_JUDGE_MODEL
 from evals.common import DEEPAGENT_AGENT, WORKFLOW_AGENT, agent_tag, tag_resource
 from evals.online import cites_sources
+from evals.settings import ONLINE_JUDGE_CONFIG, ONLINE_JUDGE_MODEL
 
 AGENTS = [WORKFLOW_AGENT, DEEPAGENT_AGENT]
 ENVIRONMENT = "PRODUCTION"

@@ -2,8 +2,8 @@
 
 The target calls the node function directly with a state dict. The graph,
 retrieval and answer model never run, so the experiment measures the routing
-decision and nothing else. The same classifier is the deep agent's middleware
-guardrail, so this grades both agents' front door.
+decision and nothing else. The deep agent's middleware guardrail is a copy of
+this classifier, so while the two copies match, this grades both agents' front door.
 
     python -m evals.classifier_eval                      # default classifier model
     python -m evals.classifier_eval --model langsmith:custom/claude-sonnet-5-5
@@ -12,16 +12,30 @@ guardrail, so this grades both agents' front door.
 import argparse
 import asyncio
 
+from chat_langchain_deepagent import classifier as deepagent_classifier
+from chat_langchain_workflow import classifier as workflow_classifier
+from chat_langchain_workflow.graph import classify
+from chat_langchain_workflow.settings import FAST_MODEL
 from langchain_core.messages import convert_to_messages
 from langsmith import Client, aevaluate
 
-from chat_langchain.settings import FAST_MODEL
-from chat_langchain.workflow import classify
 from evals.common import DEEPAGENT_AGENT, WORKFLOW_AGENT, ensure_dataset, short_name, tag_experiment
 
 DATASET = "chat-langchain-relevance"
-# The classifier is the workflow's `classify` node AND the deep agent's guardrail.
-AGENTS = [WORKFLOW_AGENT, DEEPAGENT_AGENT]
+
+
+def graded_agents() -> list[str]:
+    """The workflow always; the deep agent too while its guardrail copy matches this one."""
+    def substance(module):
+        return module.SYSTEM_PROMPT, module.REFUSAL, module.Relevance.model_json_schema()
+
+    if substance(workflow_classifier) == substance(deepagent_classifier):
+        return [WORKFLOW_AGENT, DEEPAGENT_AGENT]
+    print(
+        "note: the deep agent's classifier no longer matches the workflow's "
+        "(prompt, refusal or schema), so this experiment is tagged to the workflow only"
+    )
+    return [WORKFLOW_AGENT]
 
 
 def make_target(model: str):
@@ -69,12 +83,13 @@ def false_refusal_rate(outputs: list[dict], reference_outputs: list[dict]) -> di
 
 async def main(model: str) -> str:
     client = Client()
+    agents = graded_agents()
     ensure_dataset(
         client,
         DATASET,
         "relevance.jsonl",
         "Is the latest user message about the LangChain ecosystem? Labels for the classify node.",
-        agents=AGENTS,
+        agents=agents,
     )
     results = await aevaluate(
         make_target(model),
@@ -86,8 +101,8 @@ async def main(model: str) -> str:
         max_concurrency=8,
         client=client,
     )
-    tag_experiment(client, results.experiment_name, AGENTS)
-    print(f"experiment: {results.experiment_name} (tagged to {AGENTS})")
+    tag_experiment(client, results.experiment_name, agents)
+    print(f"experiment: {results.experiment_name} (tagged to {agents})")
     return results.experiment_name
 
 

@@ -1,8 +1,7 @@
-"""The relevance guardrail, shared by both agents.
+"""The relevance guardrail behind the workflow's `classify` node.
 
-The LangGraph workflow calls it from its `classify` node; the deep agent calls it
-from `RelevanceGuardrail` middleware. One classifier, two placements, so the
-node-level eval in evals/classifier_eval.py grades both.
+It decides whether the latest user message is about the LangChain ecosystem, and
+rewrites it as a standalone search query for the `retrieve` node.
 """
 
 from typing import Literal
@@ -11,7 +10,7 @@ from langchain.chat_models import init_chat_model
 from langchain_core.messages import AnyMessage
 from pydantic import BaseModel, Field
 
-from chat_langchain.settings import FAST_MODEL
+from chat_langchain_workflow.settings import FAST_MODEL
 
 
 class Relevance(BaseModel):
@@ -29,6 +28,8 @@ class Relevance(BaseModel):
     reason: str = Field(description="One short sentence explaining the decision.")
 
 
+# The deep agent's guardrail uses a copy of this prompt, schema and refusal.
+# evals/classifier_eval.py grades the deep agent with this eval only while the copies match.
 SYSTEM_PROMPT = """\
 You are the entry guardrail for chat-langchain, an assistant that only helps with the \
 LangChain ecosystem: the LangChain and LangGraph libraries (Python and JS), Deep Agents, \
@@ -78,10 +79,6 @@ def _classifier(model: str):
 
 def _prompt(messages: list[AnyMessage]) -> list[tuple[str, str]]:
     return [("system", SYSTEM_PROMPT), ("human", _transcript(messages))]
-
-
-def classify(messages: list[AnyMessage], model: str = FAST_MODEL) -> Relevance:
-    return _classifier(model).invoke(_prompt(messages))
 
 
 async def aclassify(messages: list[AnyMessage], model: str = FAST_MODEL) -> Relevance:

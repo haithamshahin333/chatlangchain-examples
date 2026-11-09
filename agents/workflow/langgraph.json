@@ -3,7 +3,7 @@
   "python_version": "3.12",
   "dependencies": ["."],
   "graphs": {
-    "chat_langchain_deepagent": "./src/chat_langchain/deep_agent.py:make_graph"
+    "chat_langchain_workflow": "./chat_langchain_workflow/graph.py:graph"
   },
-  "env": ".env"
+  "env": "../../.env"
 }

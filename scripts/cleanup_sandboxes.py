@@ -6,7 +6,7 @@
 
 import sys
 
-from chat_langchain.sandbox import client
+from chat_langchain_deepagent.sandbox import client
 
 
 def cleanup(prefix: str = "chatlc-eval-") -> int:

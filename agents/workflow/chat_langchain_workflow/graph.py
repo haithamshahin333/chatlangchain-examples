@@ -15,9 +15,9 @@ from langchain_core.messages import AIMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, MessagesState, StateGraph
 
-from chat_langchain.classifier import REFUSAL, aclassify
-from chat_langchain.docs_tools import load_docs_tools, tool_text
-from chat_langchain.settings import FAST_MODEL, MAIN_MODEL
+from chat_langchain_workflow.classifier import REFUSAL, aclassify
+from chat_langchain_workflow.docs_tools import load_docs_tools, tool_text
+from chat_langchain_workflow.settings import FAST_MODEL, MAIN_MODEL
 
 
 class State(MessagesState):
